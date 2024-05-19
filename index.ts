@@ -34,43 +34,43 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
 });
 
 app.post("/login", async (req: Request, res: Response) => {
-    const { username, password } = req.body;
-    try {
-      const user = await User.findOne({ username });
-      if (user && bcrypt.compareSync(password, user.password)) {
-        const token = jwt.sign({ username }, SECRET_KEY, { expiresIn: "1h" });
-        return res.status(200).json({
-          jwt: token, // Send the token in the response
-          user: {
-            id: user.id,
-            username: user.username,
-            email: user.email,
-            createdAt: user.createdAt,
-            updatedAt: user.updatedAt,
-          },
-        });
-      }
-      res.status(401).json({
-        data: null,
-        error: {
-          status: 401,
-          name: "AuthenticationError",
-          message: "Invalid credentials",
-          details: {},
-        },
-      });
-    } catch (error) {
-      res.status(500).json({
-        data: null,
-        error: {
-          status: 500,
-          name: "ServerError",
-          message: "Server error",
-          details: {},
+  const { username, password } = req.body;
+  try {
+    const user = await User.findOne({ username });
+    if (user && bcrypt.compareSync(password, user.password)) {
+      const token = jwt.sign({ username }, SECRET_KEY, { expiresIn: "1h" });
+      return res.status(200).json({
+        jwt: token,
+        user: {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt,
         },
       });
     }
-  });
+    return res.status(400).json({
+      data: null,
+      error: {
+        status: 400,
+        name: "ValidationError",
+        message: "Invalid email or password",
+        details: {},
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      data: null,
+      error: {
+        status: 500,
+        name: "ServerError",
+        message: "Server error",
+        details: {},
+      },
+    });
+  }
+});
 app.post(
   "/register",
   async (req: Request, res: Response, next: NextFunction) => {
@@ -80,11 +80,15 @@ app.post(
         $or: [{ username }, { email }],
       });
       if (existingUser) {
-        const error = new CustomError(
-          "Email or Username are already taken",
-          400
-        );
-        throw error;
+        return res.status(400).json({
+          data: null,
+          error: {
+            status: 400,
+            name: "ApplicationError",
+            message: "Email or Username are already taken",
+            details: {},
+          },
+        });
       }
 
       const hashedPassword = bcrypt.hashSync(password, 10);
@@ -106,15 +110,6 @@ app.post(
     }
   }
 );
-
-class CustomError extends Error {
-  status: number;
-
-  constructor(message: string, status: number) {
-    super(message);
-    this.status = status;
-  }
-}
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
