@@ -30,9 +30,9 @@ app.post('/login', async (req: Request, res: Response) => {
 });
 
 app.post('/register', async (req: Request, res: Response) => {
-    const { username, password } = req.body;
+    const { username, password,email } = req.body;
     try {
-        const user = new User({ username, password });
+        const user = new User({ username, password,email });
         await user.save();
         res.status(201).json({ message: 'User registered' });
     } catch (error) {
