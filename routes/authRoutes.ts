@@ -1,11 +1,12 @@
 import { Router } from 'express';
-import { deleteUser, editUser, login, register, verifyToken } from '../controllers/authController';
+import { deleteUser, editUser, login, register,verifyToken as verifyToken2 } from '../controllers/authController';
+import { verifyToken } from '../middleware/authMiddleware';
 
 const router = Router();
 
 router.post('/login', login);
 router.post('/register', register);
-router.post('/verify-token', verifyToken);
+router.post('/verify-token', verifyToken2);
 
 //protected routes
 router.put('/user/:id', verifyToken, editUser);
