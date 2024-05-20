@@ -131,9 +131,11 @@ export const verifyToken = (
 };
 export const editUser = async (req: Request, res: Response, next: NextFunction) => {
   const { id } = req.params;
-  const { username, email, avatar } = req.body;
+  const { username, email, avatar, oldPassword, newPassword } = req.body;
+
   try {
     const user = await User.findById(id);
+
     if (!user) {
       return res.status(404).json({
         data: null,
@@ -144,6 +146,22 @@ export const editUser = async (req: Request, res: Response, next: NextFunction) 
           details: {},
         },
       });
+    }
+
+    if (oldPassword && newPassword) {
+      const isMatch = bcrypt.compareSync(oldPassword, user.password);
+      if (!isMatch) {
+        return res.status(400).json({
+          data: null,
+          error: {
+            status: 400,
+            name: "ValidationError",
+            message: "Old password is incorrect",
+            details: {},
+          },
+        });
+      }
+      user.password = bcrypt.hashSync(newPassword, 10);
     }
 
     user.username = username || user.username;
