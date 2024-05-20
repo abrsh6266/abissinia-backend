@@ -129,3 +129,71 @@ export const verifyToken = (
     });
   }
 };
+export const editUser = async (req: Request, res: Response, next: NextFunction) => {
+  const { id } = req.params;
+  const { username, email, avatar } = req.body;
+  try {
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({
+        data: null,
+        error: {
+          status: 404,
+          name: "NotFoundError",
+          message: "User not found",
+          details: {},
+        },
+      });
+    }
+
+    user.username = username || user.username;
+    user.email = email || user.email;
+    user.avatar = avatar || user.avatar;
+    await user.save();
+
+    res.status(200).json({
+      data: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        avatar: user.avatar,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// New method to delete a user
+export const deleteUser = async (req: Request, res: Response, next: NextFunction) => {
+  const { id } = req.params;
+  try {
+    const user = await User.findByIdAndDelete(id);
+    if (!user) {
+      return res.status(404).json({
+        data: null,
+        error: {
+          status: 404,
+          name: "NotFoundError",
+          message: "User not found",
+          details: {},
+        },
+      });
+    }
+
+    res.status(200).json({
+      data: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        avatar: user.avatar,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
