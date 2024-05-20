@@ -14,7 +14,7 @@ export const login = async (
   try {
     const user = await User.findOne({ email });
     if (user && bcrypt.compareSync(password, user.password)) {
-      const token = jwt.sign({ email }, SECRET_KEY, { expiresIn: "1h" });
+      const token = jwt.sign({ email }, SECRET_KEY, { expiresIn: "24h" });
       return res.status(200).json({
         jwt: token,
         user: {
@@ -73,7 +73,7 @@ export const register = async (
       avatar,
     });
     await user.save();
-    const token = jwt.sign({ username }, SECRET_KEY, { expiresIn: "1h" });
+    const token = jwt.sign({ username }, SECRET_KEY, { expiresIn: "24h" });
     res.status(201).json({
       jwt: token,
       user: {
@@ -89,39 +89,43 @@ export const register = async (
     next(error);
   }
 };
-export const verifyToken = (req: Request, res: Response, next: NextFunction) => {
-    const { token } = req.body;
+export const verifyToken = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { token } = req.body;
 
-    if (!token) {
-        return res.status(400).json({
-            data: null,
-            error: {
-                status: 400,
-                name: "ValidationError",
-                message: "Token is required",
-                details: {},
-            },
-        });
-    }
+  if (!token) {
+    return res.status(400).json({
+      data: null,
+      error: {
+        status: 400,
+        name: "ValidationError",
+        message: "Token is required",
+        details: {},
+      },
+    });
+  }
 
-    try {
-        const decoded = jwt.verify(token, SECRET_KEY);
-        return res.status(200).json({
-            data: {
-                message: "Token is valid",
-                user: decoded,
-            },
-            error: null,
-        });
-    } catch (err) {
-        return res.status(401).json({
-            data: null,
-            error: {
-                status: 401,
-                name: "AuthorizationError",
-                message: "Invalid Token",
-                details: {},
-            },
-        });
-    }
+  try {
+    const decoded = jwt.verify(token, SECRET_KEY);
+    return res.status(200).json({
+      data: {
+        message: "Token is valid",
+        user: decoded,
+      },
+      error: null,
+    });
+  } catch (err) {
+    return res.status(401).json({
+      data: null,
+      error: {
+        status: 401,
+        name: "AuthorizationError",
+        message: "Invalid Token",
+        details: {},
+      },
+    });
+  }
 };
