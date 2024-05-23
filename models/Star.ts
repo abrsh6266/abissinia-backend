@@ -10,7 +10,7 @@ export interface IStar extends Document {
   profilePhoto: string;
 }
 
-const StarSchema: Schema = new Schema({
+const starSchema: Schema = new Schema({
   name: { type: String, required: true },
   address: {
     email: { type: String, required: true },
@@ -20,4 +20,4 @@ const StarSchema: Schema = new Schema({
   profilePhoto: { type: String, required: true },
 });
 
-export default mongoose.model<IStar>('Star', StarSchema);
+export default mongoose.model<IStar>('Star', starSchema);
