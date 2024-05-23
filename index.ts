@@ -3,6 +3,7 @@ import bodyParser from "body-parser";
 import cors from "cors";
 import connectDB from "./db";
 import authRoutes from "./routes/authRoutes";
+import otherRoutes from "./routes/otherRoutes";
 
 const app = express();
 const PORT = 4000;
@@ -14,7 +15,8 @@ app.use(bodyParser.json());
 app.use(cors());
 
 // Use auth routes
-app.use('/api/auth', authRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api", otherRoutes);
 
 // Custom error handling middleware
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
