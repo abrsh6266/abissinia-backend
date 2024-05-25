@@ -15,7 +15,7 @@ export interface IMovie extends Document {
 const movieSchema: Schema = new Schema({
   title: { type: String, required: true },
   duration: { type: String },
-  genre: { type: String, required: true },
+  genre: [{ type: String, required: true }],
   country: { type: String, required: true },
   starsId: [{ type: Schema.Types.ObjectId, ref: "Star", required: true }],
   releaseDate: { type: Date, required: true },
