@@ -34,6 +34,32 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
     next();
   }
 });
+//payment
+app.get('/api/verifyPayment', async (req, res) => {
+  const { tx_ref } = req.query;
+
+  const myHeaders = {
+    "Authorization": `Bearer ${process.env.CHAPA_SECRET_KEY}`,
+  };
+
+  try {
+    const response = await fetch(`https://api.chapa.co/v1/transaction/verify/${tx_ref}`, {
+      method: 'GET',
+      headers: myHeaders,
+    });
+
+    const result = await response.json();
+
+    if (result.status === 'success') {
+      // Handle successful payment (e.g., update order status in your database)
+      res.redirect(302, `/payment-success?tx_ref=${tx_ref}`);
+    } else {
+      res.redirect(302, `/payment-failure?tx_ref=${tx_ref}`);
+    }
+  } catch (error) {
+    res.redirect(302, `/payment-failure?tx_ref=${tx_ref}`);
+  }
+});
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
