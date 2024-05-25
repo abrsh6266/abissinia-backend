@@ -53,12 +53,12 @@ app.get("/api/verifyPayment", async (req, res) => {
     const result = await response.json();
     if (result.status === "success") {
       // Handle successful payment (e.g., update order status in your database)
-      res.redirect(302, `/payment-success?tx_ref=${tx_ref}`);
+      res.redirect(302, `http://localhost:3000/payment-success?tx_ref=${tx_ref}`);
     } else {
-      res.redirect(302, `/payment-failure?tx_ref=${tx_ref}`);
+      res.redirect(302, `http://localhost:3000/payment-failure?tx_ref=${tx_ref}`);
     }
   } catch (error) {
-    res.redirect(302, `/payment-failure?tx_ref=${tx_ref}`);
+    res.redirect(302, `http://localhost:3000/payment-failure?tx_ref=${tx_ref}`);
   }
 });
 
