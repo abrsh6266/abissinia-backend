@@ -118,18 +118,47 @@ export const verifyToken = (
       error: null,
     });
   } catch (err) {
-    return res.status(401).json({
+    if (err instanceof jwt.TokenExpiredError) {
+      return res.status(401).json({
+        data: null,
+        error: {
+          status: 401,
+          name: "AuthorizationError",
+          message: "Token has expired",
+          details: {},
+        },
+      });
+    }
+
+    if (err instanceof jwt.JsonWebTokenError) {
+      return res.status(401).json({
+        data: null,
+        error: {
+          status: 401,
+          name: "AuthorizationError",
+          message: "Invalid Token",
+          details: {},
+        },
+      });
+    }
+
+    // Handle other possible errors
+    return res.status(500).json({
       data: null,
       error: {
-        status: 401,
-        name: "AuthorizationError",
-        message: "Invalid Token",
+        status: 500,
+        name: "InternalServerError",
+        message: "An error occurred while verifying the token",
         details: {},
       },
     });
   }
 };
-export const editUser = async (req: Request, res: Response, next: NextFunction) => {
+export const editUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const { id } = req.params;
   const { username, email, avatar, oldPassword, newPassword } = req.body;
 
@@ -185,7 +214,11 @@ export const editUser = async (req: Request, res: Response, next: NextFunction) 
 };
 
 // New method to delete a user
-export const deleteUser = async (req: Request, res: Response, next: NextFunction) => {
+export const deleteUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const { id } = req.params;
   try {
     const user = await User.findByIdAndDelete(id);
