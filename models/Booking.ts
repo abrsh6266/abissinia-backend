@@ -6,6 +6,7 @@ export interface IBooking extends Document {
   userId: mongoose.Types.ObjectId;
   movieShowId: mongoose.Types.ObjectId;
   order?: mongoose.Types.ObjectId;
+  status?: string;
   seats: {
     booked: SeatType[];
   };
@@ -16,6 +17,10 @@ const bookingSchema: Schema<IBooking> = new Schema<IBooking>({
   bookingDate: {
     type: Date,
     default: Date.now,
+  },
+  status: {
+    type: String,
+    default: "pending",
   },
   userId: {
     type: Schema.Types.ObjectId,
