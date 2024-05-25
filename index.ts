@@ -51,7 +51,6 @@ app.get("/api/verifyPayment", async (req, res) => {
       }
     );
     const result = await response.json();
-    res.status(201).json(result);
     if (result.status === "success") {
       // Handle successful payment (e.g., update order status in your database)
       res.redirect(302, `/payment-success?tx_ref=${tx_ref}`);
