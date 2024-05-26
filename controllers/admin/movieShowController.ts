@@ -41,6 +41,20 @@ export const getMovieShowById = async (req: Request, res: Response, next: NextFu
   }
 };
 
+// Function to find shows by movie ID
+export const getMovieShowsByMovieId = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { movieId } = req.params;
+    const movieShows = await MovieShow.find({ movieId }).populate('movieId').populate('hallId');
+    if (!movieShows || movieShows.length === 0) {
+      return res.status(404).json({ message: 'No movie shows found for this movie ID' });
+    }
+    res.status(200).json(movieShows);
+  } catch (error) {
+    next(error);
+  }
+};
+
 // Function to handle updating a movie show by ID
 export const updateMovieShowById = async (req: Request, res: Response, next: NextFunction) => {
   try {
