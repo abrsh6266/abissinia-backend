@@ -26,7 +26,7 @@ export const createMovie = async (req: Request, res: Response, next: NextFunctio
 // Function to handle fetching all movies
 export const getAllMovies = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const movies = await Movie.find();
+    const movies = await Movie.find().populate('star').populate('review');
     res.status(200).json(movies);
   } catch (error) {
     next(error);
