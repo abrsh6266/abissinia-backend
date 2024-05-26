@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
-import Movie, { IMovie } from "../../models/Movie";
+import Movie from "../../models/Movie";
+import MovieShow from "../../models/MovieShow";
 
 // Function to handle creating a new movie
 export const createMovie = async (
@@ -44,7 +45,13 @@ export const getAllMovies = async (
   next: NextFunction
 ) => {
   try {
-    const movies = await Movie.find().populate("starsId").populate("reviewId");
+    const movies = await Movie.find()
+      .populate("starsId")
+      .populate("reviewId")
+      .populate({
+        path: "shows",
+        populate: { path: "movieId hallId" },
+      });
     res.status(200).json(movies);
   } catch (error) {
     next(error);
@@ -61,7 +68,11 @@ export const getMovieById = async (
     const { id } = req.params;
     const movie = await Movie.findById(id)
       .populate("starsId")
-      .populate("reviewId");
+      .populate("reviewId")
+      .populate({
+        path: "shows",
+        populate: { path: "movieId hallId" },
+      });
     if (!movie) {
       return res.status(404).json({ message: "Movie not found" });
     }
@@ -75,7 +86,13 @@ export const getMovieById = async (
 export const updateMovieById = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
-    const updatedMovie = await Movie.findByIdAndUpdate(id, req.body, { new: true }).populate('starsId').populate('reviewId');
+    const updatedMovie = await Movie.findByIdAndUpdate(id, req.body, { new: true })
+      .populate('starsId')
+      .populate('reviewId')
+      .populate({
+        path: "shows",
+        populate: { path: "movieId hallId" },
+      });
     if (!updatedMovie) {
       return res.status(404).json({ message: 'Movie not found' });
     }
@@ -84,7 +101,6 @@ export const updateMovieById = async (req: Request, res: Response, next: NextFun
     next(error);
   }
 };
-
 
 // Function to handle deleting a movie by ID
 export const deleteMovieById = async (
