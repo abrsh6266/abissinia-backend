@@ -36,8 +36,7 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
 });
 //payment
 app.get("/api/verifyPayment", async (req, res) => {
-  const { tx_ref } = req.query;
-
+  const { tx_ref, id } = req.query;
   const myHeaders = {
     Authorization: `Bearer ${process.env.CHAPA_SECRET_KEY}`,
   };
@@ -51,15 +50,7 @@ app.get("/api/verifyPayment", async (req, res) => {
       }
     );
     const result = await response.json();
-    if (result.status === "success") {
-      // Handle successful payment (e.g., update order status in your database)
-      res.redirect(302, `http://localhost:3000/payment-success?tx_ref=${tx_ref}`);
-    } else {
-      res.redirect(302, `http://localhost:3000/payment-failure?tx_ref=${tx_ref}`);
-    }
-  } catch (error) {
-    res.redirect(302, `http://localhost:3000/payment-failure?tx_ref=${tx_ref}`);
-  }
+  } catch (error) {}
 });
 
 app.listen(PORT, () => {
