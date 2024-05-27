@@ -29,6 +29,8 @@ router.delete("/halls/:id", hallController.deleteHallById);
 router.post("/movies", movieController.createMovie);
 router.get("/movies", movieController.getAllMovies);
 router.get("/movies/search", movieController.searchMoviesByName);
+router.get("/movies/recent", movieController.getRecentlyReleasedMovies);
+router.get("/movies/scheduled", movieController.getScheduledMovies);
 router.get("/movies/:id", movieController.getMovieById);
 router.put("/movies/:id", movieController.updateMovieById);
 router.delete("/movies/:id", movieController.deleteMovieById);

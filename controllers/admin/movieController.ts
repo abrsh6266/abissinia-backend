@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import Movie, { IMovie } from "../../models/Movie";
+import MovieShow from "../../models/MovieShow"; // Import MovieShow model
 
 // Function to handle creating a new movie
 export const createMovie = async (
@@ -129,6 +130,44 @@ export const searchMoviesByName = async (
     })
       .populate("starsId")
       .populate("reviewId");
+
+    res.status(200).json(movies);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Function to handle fetching recently released movies
+export const getRecentlyReleasedMovies = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const recentDays = 1000; // Define the period for recent releases
+    const recentDate = new Date();
+    recentDate.setDate(recentDate.getDate() - recentDays);
+
+    const movies = await Movie.find({
+      releaseDate: { $gte: recentDate },
+    }).populate("starsId").populate("reviewId");
+
+    res.status(200).json(movies);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Function to handle fetching movies that are scheduled
+export const getScheduledMovies = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const movieShows = await MovieShow.find().populate("movieId");
+
+    const movies = movieShows.map(show => show.movieId);
 
     res.status(200).json(movies);
   } catch (error) {
