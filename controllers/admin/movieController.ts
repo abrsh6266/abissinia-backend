@@ -85,7 +85,6 @@ export const updateMovieById = async (req: Request, res: Response, next: NextFun
   }
 };
 
-
 // Function to handle deleting a movie by ID
 export const deleteMovieById = async (
   req: Request,
@@ -99,6 +98,28 @@ export const deleteMovieById = async (
       return res.status(404).json({ message: "Movie not found" });
     }
     res.status(200).json({ message: "Movie deleted successfully" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Function to handle searching movies by name (partial and case-insensitive)
+export const searchMoviesByName = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { name } = req.query;
+    if (!name) {
+      return res.status(400).json({ message: "Name query parameter is required" });
+    }
+
+    const movies = await Movie.find({
+      title: { $regex: name, $options: "i" },
+    }).populate("starsId").populate("reviewId");
+
+    res.status(200).json(movies);
   } catch (error) {
     next(error);
   }
