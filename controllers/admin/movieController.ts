@@ -72,12 +72,20 @@ export const getMovieById = async (
 };
 
 // Function to handle updating a movie by ID
-export const updateMovieById = async (req: Request, res: Response, next: NextFunction) => {
+export const updateMovieById = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { id } = req.params;
-    const updatedMovie = await Movie.findByIdAndUpdate(id, req.body, { new: true }).populate('starsId').populate('reviewId');
+    const updatedMovie = await Movie.findByIdAndUpdate(id, req.body, {
+      new: true,
+    })
+      .populate("starsId")
+      .populate("reviewId");
     if (!updatedMovie) {
-      return res.status(404).json({ message: 'Movie not found' });
+      return res.status(404).json({ message: "Movie not found" });
     }
     res.status(200).json(updatedMovie);
   } catch (error) {
@@ -112,12 +120,15 @@ export const searchMoviesByName = async (
   try {
     const { name } = req.query;
     if (!name) {
-      return res.status(400).json({ message: "Name query parameter is required" });
+      return res
+        .status(400)
+        .json({ message: "Name query parameter is required" });
     }
-
     const movies = await Movie.find({
       title: { $regex: name, $options: "i" },
-    }).populate("starsId").populate("reviewId");
+    })
+      .populate("starsId")
+      .populate("reviewId");
 
     res.status(200).json(movies);
   } catch (error) {
