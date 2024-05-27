@@ -127,6 +127,8 @@ export const searchMoviesByName = async (
     const movies = await Movie.find({
       title: { $regex: name, $options: "i" },
     })
+      .populate("starsId")
+      .populate("reviewId");
 
     res.status(200).json(movies);
   } catch (error) {
