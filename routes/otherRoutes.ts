@@ -28,10 +28,10 @@ router.delete("/halls/:id", hallController.deleteHallById);
 // Routes for movies
 router.post("/movies", movieController.createMovie);
 router.get("/movies", movieController.getAllMovies);
+router.get("/movies/search", movieController.searchMoviesByName);
 router.get("/movies/:id", movieController.getMovieById);
 router.put("/movies/:id", movieController.updateMovieById);
 router.delete("/movies/:id", movieController.deleteMovieById);
-router.get("/movies/search", movieController.searchMoviesByName);
 
 // Routes for movie shows
 router.post("/movie-shows", movieShowController.createMovieShow);
