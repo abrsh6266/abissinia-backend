@@ -144,13 +144,15 @@ export const getRecentlyReleasedMovies = async (
   next: NextFunction
 ) => {
   try {
-    const recentDays = 1000; // Define the period for recent releases
+    const recentDays = 700; // Define the period for recent releases
     const recentDate = new Date();
     recentDate.setDate(recentDate.getDate() - recentDays);
 
     const movies = await Movie.find({
       releaseDate: { $gte: recentDate },
-    }).populate("starsId").populate("reviewId");
+    })
+      .populate("starsId")
+      .populate("reviewId");
 
     res.status(200).json(movies);
   } catch (error) {
@@ -172,7 +174,7 @@ export const getScheduledMovies = async (
       },
     });
 
-    const movies = movieShows.map(show => show.movieId);
+    const movies = movieShows.map((show) => show.movieId);
 
     res.status(200).json(movies);
   } catch (error) {
