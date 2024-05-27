@@ -165,7 +165,12 @@ export const getScheduledMovies = async (
   next: NextFunction
 ) => {
   try {
-    const movieShows = await MovieShow.find().populate("movieId");
+    const movieShows = await MovieShow.find().populate({
+      path: "movieId",
+      populate: {
+        path: "starsId reviewId", // Populate starsId and reviewId within movieId
+      },
+    });
 
     const movies = movieShows.map(show => show.movieId);
 
