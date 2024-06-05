@@ -7,7 +7,7 @@ export interface IReview extends Document {
   comment?: string;
   date: Date;
 }
-
+//SCHEMA
 const reviewSchema: Schema = new Schema({
   userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   movieId: { type: Schema.Types.ObjectId, ref: 'Movie', required: true },
