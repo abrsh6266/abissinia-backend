@@ -27,7 +27,7 @@ export const createReview = async (
     );
 
     // Populate the user information for the saved review
-    const populatedReview = await savedReview.populate("userId").execPopulate();
+    const populatedReview = await savedReview.populate("userId");
 
     res.status(201).json(populatedReview);
   } catch (error) {
