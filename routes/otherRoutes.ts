@@ -13,11 +13,11 @@ import * as userController from "../controllers/admin/userController";
 const router = express.Router();
 
 // User Routes
-router.post("/api/users", userController.createUser);
-router.get("/api/users", userController.getAllUsers);
-router.get("/api/users/:id", userController.getUserById);
-router.put("/api/users/:id", userController.updateUserById);
-router.delete("/api/users/:id", userController.deleteUserById);
+router.post("/users", userController.createUser);
+router.get("/users", userController.getAllUsers);
+router.get("/users/:id", userController.getUserById);
+router.put("/users/:id", userController.updateUserById);
+router.delete("/users/:id", userController.deleteUserById);
 
 // Routes for bookings
 router.post("/bookings", bookingController.createBooking);
