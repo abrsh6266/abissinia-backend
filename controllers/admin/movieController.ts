@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
-import Movie, { IMovie } from "../../models/Movie";
-import MovieShow from "../../models/MovieShow"; // Import MovieShow model
+import Movie from "../../models/Movie";
+import MovieShow from "../../models/MovieShow";
 
 // Function to handle creating a new movie
 export const createMovie = async (
@@ -45,7 +45,15 @@ export const getAllMovies = async (
   next: NextFunction
 ) => {
   try {
-    const movies = await Movie.find().populate("starsId").populate("reviewId");
+    const movies = await Movie.find()
+      .populate("starsId")
+      .populate({
+        path: "reviewId",
+        populate: {
+          path: "userId",
+          model: "User",
+        },
+      });
     res.status(200).json(movies);
   } catch (error) {
     next(error);
@@ -62,7 +70,13 @@ export const getMovieById = async (
     const { id } = req.params;
     const movie = await Movie.findById(id)
       .populate("starsId")
-      .populate("reviewId");
+      .populate({
+        path: "reviewId",
+        populate: {
+          path: "userId",
+          model: "User",
+        },
+      });
     if (!movie) {
       return res.status(404).json({ message: "Movie not found" });
     }
@@ -84,7 +98,13 @@ export const updateMovieById = async (
       new: true,
     })
       .populate("starsId")
-      .populate("reviewId");
+      .populate({
+        path: "reviewId",
+        populate: {
+          path: "userId",
+          model: "User",
+        },
+      });
     if (!updatedMovie) {
       return res.status(404).json({ message: "Movie not found" });
     }
@@ -129,7 +149,13 @@ export const searchMoviesByName = async (
       title: { $regex: name, $options: "i" },
     })
       .populate("starsId")
-      .populate("reviewId");
+      .populate({
+        path: "reviewId",
+        populate: {
+          path: "userId",
+          model: "User",
+        },
+      });
 
     res.status(200).json(movies);
   } catch (error) {
@@ -152,7 +178,13 @@ export const getRecentlyReleasedMovies = async (
       releaseDate: { $gte: recentDate },
     })
       .populate("starsId")
-      .populate("reviewId");
+      .populate({
+        path: "reviewId",
+        populate: {
+          path: "userId",
+          model: "User",
+        },
+      });
 
     res.status(200).json(movies);
   } catch (error) {
@@ -171,6 +203,13 @@ export const getScheduledMovies = async (
       path: "movieId",
       populate: {
         path: "starsId reviewId", // Populate starsId and reviewId within movieId
+        populate: {
+          path: "reviewId",
+          populate: {
+            path: "userId",
+            model: "User",
+          },
+        },
       },
     });
 
