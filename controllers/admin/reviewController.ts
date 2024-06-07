@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
-import Review, { IReview } from "../../models/Review";
+import Review from "../../models/Review";
+import Movie from "../../models/Movie";
 
 // Function to handle creating a new review
 export const createReview = async (
@@ -17,6 +18,14 @@ export const createReview = async (
       date,
     });
     const savedReview = await newReview.save();
+
+    // Update the Movie model to include this new review's ID
+    await Movie.findByIdAndUpdate(
+      movieId,
+      { $push: { reviewId: savedReview._id } },
+      { new: true }
+    );
+
     res.status(201).json(savedReview);
   } catch (error) {
     next(error);
