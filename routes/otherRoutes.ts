@@ -8,8 +8,16 @@ import * as orderController from "../controllers/admin/orderController";
 import * as reviewController from "../controllers/admin/reviewController";
 import * as snackController from "../controllers/admin/snackController";
 import * as starController from "../controllers/admin/starController";
+import * as userController from "../controllers/admin/userController";
 
 const router = express.Router();
+
+// User Routes
+router.post("/api/users", userController.createUser);
+router.get("/api/users", userController.getAllUsers);
+router.get("/api/users/:id", userController.getUserById);
+router.put("/api/users/:id", userController.updateUserById);
+router.delete("/api/users/:id", userController.deleteUserById);
 
 // Routes for bookings
 router.post("/bookings", bookingController.createBooking);
