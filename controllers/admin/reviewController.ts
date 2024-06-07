@@ -26,11 +26,15 @@ export const createReview = async (
       { new: true }
     );
 
-    res.status(201).json(savedReview);
+    // Populate the user information for the saved review
+    const populatedReview = await savedReview.populate("userId").execPopulate();
+
+    res.status(201).json(populatedReview);
   } catch (error) {
     next(error);
   }
 };
+
 
 // Function to handle fetching all reviews
 export const getAllReviews = async (
