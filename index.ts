@@ -36,17 +36,18 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   }
 });
 
-
 interface VerifyPaymentRequest extends Request {
   body: {
-      tx_ref: string;
+    tx_ref: string;
   };
 }
-//payment
+
+// Payment verification endpoint
 app.post(
   "/verify-payment",
   async (req: VerifyPaymentRequest, res: Response) => {
     const { tx_ref } = req.body;
+    const { user_id, movieTitle, day, time, seatArea, seats, extras, totalPrice } = req.query;
 
     try {
       const response = await axios.get(
@@ -59,19 +60,27 @@ app.post(
       );
 
       if (response.data.status === "success") {
-        res
-          .status(200)
-          .json({
-            message: "Payment verified successfully",
-            data: response.data,
-          });
+        // Handle successful payment verification
+        // You can use user_id, movieTitle, day, time, seatArea, seats, extras, and totalPrice here
+        res.status(200).json({
+          message: "Payment verified successfully",
+          data: response.data,
+          user: {
+            id: user_id,
+            movieTitle,
+            day,
+            time,
+            seatArea,
+            seats,
+            extras,
+            totalPrice,
+          },
+        });
       } else {
-        res
-          .status(400)
-          .json({
-            message: "Payment verification failed",
-            data: response.data,
-          });
+        res.status(400).json({
+          message: "Payment verification failed",
+          data: response.data,
+        });
       }
     } catch (error: any) {
       res.status(500).json({ message: "Server error", error: error.message });
