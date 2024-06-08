@@ -4,6 +4,7 @@ import cors from "cors";
 import connectDB from "./db";
 import authRoutes from "./routes/authRoutes";
 import otherRoutes from "./routes/otherRoutes";
+import axios from "axios";
 
 const app = express();
 const PORT = 4000;
@@ -34,24 +35,47 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
     next();
   }
 });
-//payment
-app.get("/api/verifyPayment", async (req, res) => {
-  const { tx_ref, id } = req.query;
-  const myHeaders = {
-    Authorization: `Bearer ${process.env.CHAPA_SECRET_KEY}`,
+interface VerifyPaymentRequest extends Request {
+  body: {
+    tx_ref: string;
   };
+}
+//payment
+app.post(
+  "/verify-payment",
+  async (req: VerifyPaymentRequest, res: Response) => {
+    const { tx_ref } = req.body;
 
-  try {
-    const response = await fetch(
-      `https://api.chapa.co/v1/transaction/verify/${tx_ref}`,
-      {
-        method: "GET",
-        headers: myHeaders,
+    try {
+      const response = await axios.get(
+        `https://api.chapa.co/v1/transaction/verify/${tx_ref}`,
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.CHAPA_SECRET_KEY}`,
+          },
+        }
+      );
+
+      if (response.data.status === "success") {
+        res
+          .status(200)
+          .json({
+            message: "Payment verified successfully",
+            data: response.data,
+          });
+      } else {
+        res
+          .status(400)
+          .json({
+            message: "Payment verification failed",
+            data: response.data,
+          });
       }
-    );
-    const result = await response.json();
-  } catch (error) {}
-});
+    } catch (error: any) {
+      res.status(500).json({ message: "Server error", error: error.message });
+    }
+  }
+);
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
