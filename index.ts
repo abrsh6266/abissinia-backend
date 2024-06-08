@@ -35,9 +35,11 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
     next();
   }
 });
+
+
 interface VerifyPaymentRequest extends Request {
   body: {
-    tx_ref: string;
+      tx_ref: string;
   };
 }
 //payment
