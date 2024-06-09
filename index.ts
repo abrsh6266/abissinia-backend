@@ -5,6 +5,13 @@ import connectDB from "./db";
 import authRoutes from "./routes/authRoutes";
 import otherRoutes from "./routes/otherRoutes";
 import axios from "axios";
+import Movie from "./models/Movie";
+import User from "./models/User";
+import Snack from "./models/Snack";
+import Order from "./models/Order";
+import Booking from "./models/Booking";
+import mongoose from "mongoose";
+import MovieShow from "./models/MovieShow";
 
 const app = express();
 const PORT = 4000;
@@ -36,9 +43,19 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   }
 });
 
-interface VerifyPaymentRequest extends Request {
+interface VerifyPaymentRequest {
   body: {
     tx_ref: string;
+  };
+  query: {
+    user_id: string;
+    movieTitle: string;
+    day: string;
+    time: string;
+    seatArea: string;
+    seats: string[];
+    extras?: string;
+    totalPrice: number;
   };
 }
 
@@ -47,7 +64,8 @@ app.post(
   "/verify-payment",
   async (req: VerifyPaymentRequest, res: Response) => {
     const { tx_ref } = req.body;
-    const { user_id, movieTitle, day, time, seatArea, seats, extras, totalPrice } = req.query;
+    const { user_id, movieTitle, day, time, seatArea, seats, totalPrice } =
+      req.query;
 
     try {
       const response = await axios.get(
@@ -61,7 +79,69 @@ app.post(
 
       if (response.data.status === "success") {
         // Handle successful payment verification
-        // You can use user_id, movieTitle, day, time, seatArea, seats, extras, and totalPrice here
+
+        const movie = await Movie.findOne({ title: movieTitle });
+        if (!movie) {
+          return res.status(404).json({ message: "Movie not found" });
+        }
+
+        const user = await User.findById(user_id);
+        if (!user) {
+          return res.status(404).json({ message: "User not found" });
+        }
+
+        // Handle extras
+        const extras = req.query.extras
+          ? JSON.parse(req.query.extras as string)
+          : [];
+        const snacks = await Promise.all(
+          extras.map(async (extra: { name: string; amount: number }) => {
+            const snack = await Snack.findOne({ name: extra.name });
+            if (!snack) {
+              throw new Error(`Snack '${extra.name}' not found`);
+            }
+            return { ...snack.toObject(), quantity: extra.amount };
+          })
+        );
+
+        // Find the movie show
+        const movieShow = await MovieShow.findOne({
+          movieId: movie._id,
+          showTime: {
+            $elemMatch: {
+              day: day,
+              time: time,
+            },
+          },
+        });
+
+        if (!movieShow) {
+          return res.status(404).json({ message: "Movie show not found" });
+        }
+
+        // Create a new order
+        const order = new Order({
+          snacks: snacks.map((snack) => ({
+            snackId: snack._id,
+            quantity: snack.quantity,
+          })),
+          movieId: movie._id,
+          price: totalPrice,
+        });
+        await order.save();
+
+        // Create a new booking
+        const booking = new Booking({
+          userId: user._id,
+          movieShowId: movieShow._id,
+          order: order._id,
+          seats: {
+            booked: seats.map((seat) => ({ seatNumber: parseInt(seat, 10) })),
+          },
+          price: totalPrice,
+        });
+        await booking.save();
+
         res.status(200).json({
           message: "Payment verified successfully",
           data: response.data,
