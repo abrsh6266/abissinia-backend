@@ -56,16 +56,24 @@ interface VerifyPaymentRequest {
     seats: string[];
     extras?: string;
     totalPrice: number;
+    tx_ref: string;
   };
 }
 
 // Payment verification endpoint
-app.post(
+app.get(
   "/verify-payment",
   async (req: VerifyPaymentRequest, res: Response) => {
-    const { tx_ref } = req.body;
-    const { user_id, movieTitle, day, time, seatArea, seats, totalPrice } =
-      req.query;
+    const {
+      user_id,
+      movieTitle,
+      day,
+      time,
+      seatArea,
+      seats,
+      totalPrice,
+      tx_ref,
+    } = req.query;
 
     try {
       const response = await axios.get(
