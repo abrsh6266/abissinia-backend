@@ -43,19 +43,16 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   }
 });
 
-interface VerifyPaymentRequest {
-  body: {
-    tx_ref: string;
-  };
+interface VerifyPaymentRequest extends Request {
   query: {
     user_id: string;
     movieTitle: string;
     day: string;
     time: string;
     seatArea: string;
-    seats: string[];
+    seats: string;
     extras?: string;
-    totalPrice: number;
+    totalPrice: string;
     tx_ref: string;
   };
 }
@@ -112,6 +109,9 @@ app.get(
           })
         );
 
+        // Convert seats to an array
+        const seatsArray = seats.split(',').map(seat => seat.trim());
+
         // Find the movie show
         const movieShow = await MovieShow.findOne({
           movieId: movie._id,
@@ -144,7 +144,7 @@ app.get(
           movieShowId: movieShow._id,
           order: order._id,
           seats: {
-            booked: seats.map((seat) => ({ seatNumber: parseInt(seat, 10) })),
+            booked: seatsArray.map((seat) => ({ seatNumber: parseInt(seat, 10) })),
           },
           price: totalPrice,
         });
@@ -159,7 +159,7 @@ app.get(
             day,
             time,
             seatArea,
-            seats,
+            seats: seatsArray,
             extras,
             totalPrice,
           },
