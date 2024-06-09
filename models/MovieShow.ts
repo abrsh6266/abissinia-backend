@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Document, Schema } from "mongoose";
 
 export interface IShowTime {
   day: string;
@@ -10,6 +10,7 @@ export interface IMovieShow extends Document {
   showTime: IShowTime[];
   movieId: mongoose.Types.ObjectId;
   hallId: mongoose.Types.ObjectId;
+  selectedSeat: string[];
 }
 
 const movieShowSchema: Schema = new Schema({
@@ -20,8 +21,9 @@ const movieShowSchema: Schema = new Schema({
       time: [{ type: String, required: true }],
     },
   ],
-  movieId: { type: Schema.Types.ObjectId, ref: 'Movie', required: true },
-  hallId: { type: Schema.Types.ObjectId, ref: 'Hall', required: true },
+  selectedSeat: [{ type: String }],
+  movieId: { type: Schema.Types.ObjectId, ref: "Movie", required: true },
+  hallId: { type: Schema.Types.ObjectId, ref: "Hall", required: true },
 });
 
-export default mongoose.model<IMovieShow>('MovieShow', movieShowSchema);
+export default mongoose.model<IMovieShow>("MovieShow", movieShowSchema);

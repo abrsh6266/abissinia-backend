@@ -127,6 +127,14 @@ app.get(
           return res.status(404).json({ message: "Movie show not found" });
         }
 
+        // Initialize selectedSeat if it is null or undefined
+        if (!movieShow.selectedSeat) {
+          movieShow.selectedSeat = [];
+        }
+
+        // Update the selected seats
+        const updatedSeats = [...new Set([...movieShow.selectedSeat, ...seatsArray])];
+
         // Create a new order
         const order = new Order({
           snacks: snacks.map((snack) => ({
@@ -149,6 +157,10 @@ app.get(
           price: totalPrice,
         });
         await booking.save();
+
+        // Update the movie show with the new selected seats
+        movieShow.selectedSeat = updatedSeats;
+        await movieShow.save();
 
         res.status(200).json({
           message: "Payment verified successfully",
