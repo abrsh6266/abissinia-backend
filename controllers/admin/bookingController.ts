@@ -90,7 +90,7 @@ export const getBookingsByUserId = async (req: Request, res: Response, next: Nex
     const { userId } = req.params;
     const bookings = await Booking.find({ userId })
       .populate('userId', 'name email')
-      .populate('movieShowId', 'showTime movieId hallId')
+      .populate('movieShowId', 'movieId hallId')
       .populate('order', 'snacks price');
     if (bookings.length === 0) {
       return res.status(404).json({ message: 'No bookings found for this user' });
