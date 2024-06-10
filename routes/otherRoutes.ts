@@ -22,6 +22,7 @@ router.delete("/users/:id", userController.deleteUserById);
 // Routes for bookings
 router.post("/bookings", bookingController.createBooking);
 router.get("/bookings", bookingController.getAllBookings);
+router.get("/bookings/user/:userId", bookingController.getBookingsByUserId);
 router.get("/bookings/:id", bookingController.getBookingById);
 router.put("/bookings/:id", bookingController.updateBookingById);
 router.delete("/bookings/:id", bookingController.deleteBookingById);
