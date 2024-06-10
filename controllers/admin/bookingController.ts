@@ -27,9 +27,31 @@ export const createBooking = async (req: Request, res: Response, next: NextFunct
 export const getAllBookings = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const bookings = await Booking.find()
-      .populate('userId', 'name email')
-      .populate('movieShowId', 'showTime movieId hallId')
-      .populate('order', 'snacks price');
+      .populate({
+        path: 'userId',
+        select: 'name email'
+      })
+      .populate({
+        path: 'movieShowId',
+        populate: [
+          {
+            path: 'movieId',
+            select: 'title genre duration'
+          },
+          {
+            path: 'hallId',
+            select: 'name location'
+          }
+        ]
+      })
+      .populate({
+        path: 'order',
+        populate: {
+          path: 'snacks.snackId',
+          select: 'name price'
+        },
+        select: 'price'
+      });
     res.status(200).json(bookings);
   } catch (error) {
     next(error);
@@ -41,9 +63,31 @@ export const getBookingById = async (req: Request, res: Response, next: NextFunc
   try {
     const { id } = req.params;
     const booking = await Booking.findById(id)
-      .populate('userId', 'name email')
-      .populate('movieShowId', 'showTime movieId hallId')
-      .populate('order', 'snacks price');
+      .populate({
+        path: 'userId',
+        select: 'name email'
+      })
+      .populate({
+        path: 'movieShowId',
+        populate: [
+          {
+            path: 'movieId',
+            select: 'title genre duration'
+          },
+          {
+            path: 'hallId',
+            select: 'name location'
+          }
+        ]
+      })
+      .populate({
+        path: 'order',
+        populate: {
+          path: 'snacks.snackId',
+          select: 'name price'
+        },
+        select: 'price'
+      });
     if (!booking) {
       return res.status(404).json({ message: 'Booking not found' });
     }
@@ -58,9 +102,31 @@ export const updateBookingById = async (req: Request, res: Response, next: NextF
   try {
     const { id } = req.params;
     const updatedBooking = await Booking.findByIdAndUpdate(id, req.body, { new: true })
-      .populate('userId', 'name email')
-      .populate('movieShowId', 'showTime movieId hallId')
-      .populate('order', 'snacks price');
+      .populate({
+        path: 'userId',
+        select: 'name email'
+      })
+      .populate({
+        path: 'movieShowId',
+        populate: [
+          {
+            path: 'movieId',
+            select: 'title genre duration'
+          },
+          {
+            path: 'hallId',
+            select: 'name location'
+          }
+        ]
+      })
+      .populate({
+        path: 'order',
+        populate: {
+          path: 'snacks.snackId',
+          select: 'name price'
+        },
+        select: 'price'
+      });
     if (!updatedBooking) {
       return res.status(404).json({ message: 'Booking not found' });
     }
@@ -89,9 +155,31 @@ export const getBookingsByUserId = async (req: Request, res: Response, next: Nex
   try {
     const { userId } = req.params;
     const bookings = await Booking.find({ userId })
-      .populate('userId', 'name email')
-      .populate('movieShowId', 'movieId hallId')
-      .populate('order', 'snacks price');
+      .populate({
+        path: 'userId',
+        select: 'name email'
+      })
+      .populate({
+        path: 'movieShowId',
+        populate: [
+          {
+            path: 'movieId',
+            select: 'title genre duration'
+          },
+          {
+            path: 'hallId',
+            select: 'name location'
+          }
+        ]
+      })
+      .populate({
+        path: 'order',
+        populate: {
+          path: 'snacks.snackId',
+          select: 'name price'
+        },
+        select: 'price'
+      });
     if (bookings.length === 0) {
       return res.status(404).json({ message: 'No bookings found for this user' });
     }
