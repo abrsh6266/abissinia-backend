@@ -149,7 +149,7 @@ export const deleteMovieById = async (
   }
 };
 
-// Function to handle searching movies by name with pagination
+// Function to handle searching movies by name (partial and case-insensitive)
 export const searchMoviesByName = async (
   req: Request,
   res: Response,
@@ -162,11 +162,6 @@ export const searchMoviesByName = async (
         .status(400)
         .json({ message: "Name query parameter is required" });
     }
-
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 10;
-    const skip = (page - 1) * limit;
-
     const movies = await Movie.find({
       title: { $regex: name, $options: "i" },
     })
@@ -177,26 +172,14 @@ export const searchMoviesByName = async (
           path: "userId",
           model: "User",
         },
-      })
-      .skip(skip)
-      .limit(limit);
+      });
 
-    const totalMovies = await Movie.countDocuments({
-      title: { $regex: name, $options: "i" },
-    });
-    const totalPages = Math.ceil(totalMovies / limit);
-
-    res.status(200).json({
-      page,
-      limit,
-      totalPages,
-      totalMovies,
-      movies,
-    });
+    res.status(200).json(movies);
   } catch (error) {
     next(error);
   }
 };
+
 
 
 // Function to handle fetching recently released movies with pagination
