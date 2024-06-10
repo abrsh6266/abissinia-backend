@@ -38,13 +38,17 @@ export const createMovie = async (
   }
 };
 
-// Function to handle fetching all movies
+// Function to handle fetching all movies with pagination
 export const getAllMovies = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const skip = (page - 1) * limit;
+
     const movies = await Movie.find()
       .populate("starsId")
       .populate({
@@ -53,12 +57,25 @@ export const getAllMovies = async (
           path: "userId",
           model: "User",
         },
-      });
-    res.status(200).json(movies);
+      })
+      .skip(skip)
+      .limit(limit);
+
+    const totalMovies = await Movie.countDocuments();
+    const totalPages = Math.ceil(totalMovies / limit);
+
+    res.status(200).json({
+      page,
+      limit,
+      totalPages,
+      totalMovies,
+      movies,
+    });
   } catch (error) {
     next(error);
   }
 };
+
 
 // Function to handle fetching a single movie by ID
 export const getMovieById = async (
@@ -132,7 +149,7 @@ export const deleteMovieById = async (
   }
 };
 
-// Function to handle searching movies by name (partial and case-insensitive)
+// Function to handle searching movies by name with pagination
 export const searchMoviesByName = async (
   req: Request,
   res: Response,
@@ -145,6 +162,11 @@ export const searchMoviesByName = async (
         .status(400)
         .json({ message: "Name query parameter is required" });
     }
+
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const skip = (page - 1) * limit;
+
     const movies = await Movie.find({
       title: { $regex: name, $options: "i" },
     })
@@ -155,15 +177,29 @@ export const searchMoviesByName = async (
           path: "userId",
           model: "User",
         },
-      });
+      })
+      .skip(skip)
+      .limit(limit);
 
-    res.status(200).json(movies);
+    const totalMovies = await Movie.countDocuments({
+      title: { $regex: name, $options: "i" },
+    });
+    const totalPages = Math.ceil(totalMovies / limit);
+
+    res.status(200).json({
+      page,
+      limit,
+      totalPages,
+      totalMovies,
+      movies,
+    });
   } catch (error) {
     next(error);
   }
 };
 
-// Function to handle fetching recently released movies
+
+// Function to handle fetching recently released movies with pagination
 export const getRecentlyReleasedMovies = async (
   req: Request,
   res: Response,
@@ -173,6 +209,10 @@ export const getRecentlyReleasedMovies = async (
     const recentDays = 700; // Define the period for recent releases
     const recentDate = new Date();
     recentDate.setDate(recentDate.getDate() - recentDays);
+
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const skip = (page - 1) * limit;
 
     const movies = await Movie.find({
       releaseDate: { $gte: recentDate },
@@ -184,32 +224,63 @@ export const getRecentlyReleasedMovies = async (
           path: "userId",
           model: "User",
         },
-      });
+      })
+      .skip(skip)
+      .limit(limit);
 
-    res.status(200).json(movies);
+    const totalMovies = await Movie.countDocuments({
+      releaseDate: { $gte: recentDate },
+    });
+    const totalPages = Math.ceil(totalMovies / limit);
+
+    res.status(200).json({
+      page,
+      limit,
+      totalPages,
+      totalMovies,
+      movies,
+    });
   } catch (error) {
     next(error);
   }
 };
 
-// Function to handle fetching movies that are scheduled
+
+// Function to handle fetching movies that are scheduled with pagination
 export const getScheduledMovies = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const movieShows = await MovieShow.find().populate({
-      path: "movieId",
-      populate: {
-        path: "starsId reviewId", // Populate starsId and reviewId within movieId
-      },
-    });
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const skip = (page - 1) * limit;
+
+    const movieShows = await MovieShow.find()
+      .populate({
+        path: "movieId",
+        populate: {
+          path: "starsId reviewId",
+        },
+      })
+      .skip(skip)
+      .limit(limit);
+
+    const totalMovieShows = await MovieShow.countDocuments();
+    const totalPages = Math.ceil(totalMovieShows / limit);
 
     const movies = movieShows.map((show) => show.movieId);
 
-    res.status(200).json(movies);
+    res.status(200).json({
+      page,
+      limit,
+      totalPages,
+      totalMovies: totalMovieShows,
+      movies,
+    });
   } catch (error) {
     next(error);
   }
 };
+
