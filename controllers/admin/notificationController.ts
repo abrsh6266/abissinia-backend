@@ -1,15 +1,25 @@
-import { Request, Response, NextFunction } from 'express';
-import Notification, { INotification } from '../../models/Notification';
+import { Request, Response, NextFunction } from "express";
+import Notification from "../../models/Notification";
 
-// Function to handle creating a new notification
-export const createNotification = async (req: Request, res: Response, next: NextFunction) => {
+// Function to create a notification for a user when an admin approves their ticket payment
+export const createNotification = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
-    const { content, date, userId } = req.body;
+    const { content, userId, link } = req.body;
+
+    if (!content || !userId) {
+      return res.status(400).json({ message: "Content and userId are required" });
+    }
+
     const newNotification = new Notification({
       content,
-      date,
       userId,
+      link: link || "#",
     });
+
     const savedNotification = await newNotification.save();
     res.status(201).json(savedNotification);
   } catch (error) {
@@ -17,53 +27,63 @@ export const createNotification = async (req: Request, res: Response, next: Next
   }
 };
 
-// Function to handle fetching all notifications
-export const getAllNotifications = async (req: Request, res: Response, next: NextFunction) => {
+// Function to remove a specific notification by ID
+export const removeNotificationById = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
-    const notifications = await Notification.find();
+    const { id } = req.params;
+
+    const deletedNotification = await Notification.findByIdAndDelete(id);
+    if (!deletedNotification) {
+      return res.status(404).json({ message: "Notification not found" });
+    }
+
+    res.status(200).json({ message: "Notification deleted successfully" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Function to get notifications by user ID
+export const getNotificationsByUserId = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { userId } = req.params;
+
+    const notifications = await Notification.find({ userId }).sort({ date: -1 });
+
     res.status(200).json(notifications);
   } catch (error) {
     next(error);
   }
 };
 
-// Function to handle fetching a single notification by ID
-export const getNotificationById = async (req: Request, res: Response, next: NextFunction) => {
+// Function to update the seen status of a specific notification by ID
+export const updateNotificationSeenStatus = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { id } = req.params;
-    const notification = await Notification.findById(id);
-    if (!notification) {
-      return res.status(404).json({ message: 'Notification not found' });
-    }
-    res.status(200).json(notification);
-  } catch (error) {
-    next(error);
-  }
-};
+    const { seen } = req.body;
 
-// Function to handle updating a notification by ID
-export const updateNotificationById = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { id } = req.params;
-    const updatedNotification = await Notification.findByIdAndUpdate(id, req.body, { new: true });
+    const updatedNotification = await Notification.findByIdAndUpdate(
+      id,
+      { seen },
+      { new: true }
+    );
     if (!updatedNotification) {
-      return res.status(404).json({ message: 'Notification not found' });
+      return res.status(404).json({ message: "Notification not found" });
     }
-    res.status(200).json(updatedNotification);
-  } catch (error) {
-    next(error);
-  }
-};
 
-// Function to handle deleting a notification by ID
-export const deleteNotificationById = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { id } = req.params;
-    const deletedNotification = await Notification.findByIdAndDelete(id);
-    if (!deletedNotification) {
-      return res.status(404).json({ message: 'Notification not found' });
-    }
-    res.status(200).json({ message: 'Notification deleted successfully' });
+    res.status(200).json(updatedNotification);
   } catch (error) {
     next(error);
   }

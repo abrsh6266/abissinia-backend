@@ -57,13 +57,10 @@ router.delete("/movie-shows/:id", movieShowController.deleteMovieShowById);
 
 // Routes for notifications
 router.post("/notifications", notificationController.createNotification);
-router.get("/notifications", notificationController.getAllNotifications);
-router.get("/notifications/:id", notificationController.getNotificationById);
-router.put("/notifications/:id", notificationController.updateNotificationById);
-router.delete(
-  "/notifications/:id",
-  notificationController.deleteNotificationById
-);
+router.delete("/notifications/:id", notificationController.removeNotificationById);
+router.get("/notifications/user/:userId", notificationController.getNotificationsByUserId);
+router.patch("/notifications/:id/seen", notificationController.updateNotificationSeenStatus);
+
 
 // Routes for orders
 router.post("/orders", orderController.createOrder);
