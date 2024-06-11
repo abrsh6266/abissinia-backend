@@ -58,136 +58,138 @@ interface VerifyPaymentRequest extends Request {
 }
 
 // Payment verification endpoint
-app.get(
-  "/verify-payment",
-  async (req: VerifyPaymentRequest, res: Response) => {
-    const {
-      user_id,
-      movieTitle,
-      day,
-      time,
-      seatArea,
-      seats,
-      totalPrice,
-      tx_ref,
-    } = req.query;
+app.get("/verify-payment", async (req: VerifyPaymentRequest, res: Response) => {
+  const {
+    user_id,
+    movieTitle,
+    day,
+    time,
+    seatArea,
+    seats,
+    totalPrice,
+    tx_ref,
+  } = req.query;
 
-    try {
-      const response = await axios.get(
-        `https://api.chapa.co/v1/transaction/verify/${tx_ref}`,
-        {
-          headers: {
-            Authorization: `Bearer ${process.env.CHAPA_SECRET_KEY}`,
-          },
-        }
+  try {
+    const response = await axios.get(
+      `https://api.chapa.co/v1/transaction/verify/${tx_ref}`,
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.CHAPA_SECRET_KEY}`,
+        },
+      }
+    );
+
+    if (response.data.status === "success") {
+      // Handle successful payment verification
+
+      const movie = await Movie.findOne({ title: movieTitle });
+      if (!movie) {
+        return res.status(404).json({ message: "Movie not found" });
+      }
+
+      const user = await User.findById(user_id);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Handle extras
+      const extras = req.query.extras
+        ? JSON.parse(req.query.extras as string)
+        : [];
+      const snacks = await Promise.all(
+        extras.map(async (extra: { name: string; amount: number }) => {
+          const snack = await Snack.findOne({ name: extra.name });
+          if (!snack) {
+            throw new Error(`Snack '${extra.name}' not found`);
+          }
+          return { ...snack.toObject(), quantity: extra.amount };
+        })
       );
 
-      if (response.data.status === "success") {
-        // Handle successful payment verification
+      // Convert seats to an array
+      const seatsArray = seats.split(",").map((seat) => seat.trim());
 
-        const movie = await Movie.findOne({ title: movieTitle });
-        if (!movie) {
-          return res.status(404).json({ message: "Movie not found" });
-        }
-
-        const user = await User.findById(user_id);
-        if (!user) {
-          return res.status(404).json({ message: "User not found" });
-        }
-
-        // Handle extras
-        const extras = req.query.extras
-          ? JSON.parse(req.query.extras as string)
-          : [];
-        const snacks = await Promise.all(
-          extras.map(async (extra: { name: string; amount: number }) => {
-            const snack = await Snack.findOne({ name: extra.name });
-            if (!snack) {
-              throw new Error(`Snack '${extra.name}' not found`);
-            }
-            return { ...snack.toObject(), quantity: extra.amount };
-          })
-        );
-
-        // Convert seats to an array
-        const seatsArray = seats.split(',').map(seat => seat.trim());
-
-        // Find the movie show
-        const movieShow = await MovieShow.findOne({
-          movieId: movie._id,
-          showTime: {
-            $elemMatch: {
-              day: day,
-              time: time,
-            },
+      // Find the movie show
+      const movieShow = await MovieShow.findOne({
+        movieId: movie._id,
+        showTime: {
+          $elemMatch: {
+            day: day,
+            time: time,
           },
-        });
+        },
+      });
 
-        if (!movieShow) {
-          return res.status(404).json({ message: "Movie show not found" });
-        }
-
-        // Initialize selectedSeat if it is null or undefined
-        if (!movieShow.selectedSeat) {
-          movieShow.selectedSeat = [];
-        }
-
-        // Update the selected seats
-        const updatedSeats = [...new Set([...movieShow.selectedSeat, ...seatsArray])];
-
-        // Create a new order
-        const order = new Order({
-          snacks: snacks.map((snack) => ({
-            snackId: snack._id,
-            quantity: snack.quantity,
-          })),
-          movieId: movie._id,
-          price: totalPrice,
-        });
-        await order.save();
-
-        // Create a new booking
-        const booking = new Booking({
-          userId: user._id,
-          movieShowId: movieShow._id,
-          order: order._id,
-          seats: {
-            booked: seatsArray.map((seat) => ({ seatNumber: parseInt(seat, 10) })),
-          },
-          price: totalPrice,
-          day:day
-        });
-        await booking.save();
-
-        // Update the movie show with the new selected seats
-        movieShow.selectedSeat = updatedSeats;
-        await movieShow.save();
-
-        res.status(200).json({
-          message: "Payment verified successfully",
-          data: response.data,
-          user: {
-            id: user_id,
-            movieTitle,
-            day,
-            time,
-            seatArea,
-            seats: seatsArray,
-            extras,
-            totalPrice,
-          },
-        });
-      } else {
-        res.status(400).json({
-          message: "Payment verification failed",
-          data: response.data,
-        });
+      if (!movieShow) {
+        return res.status(404).json({ message: "Movie show not found" });
       }
-    } catch (error: any) {
-      res.status(500).json({ message: "Server error", error: error.message });
+
+      // Initialize selectedSeat if it is null or undefined
+      if (!movieShow.selectedSeat) {
+        movieShow.selectedSeat = [];
+      }
+
+      // Update the selected seats
+      const updatedSeats = [
+        ...new Set([...movieShow.selectedSeat, ...seatsArray]),
+      ];
+
+      // Create a new order
+      const order = new Order({
+        snacks: snacks.map((snack) => ({
+          snackId: snack._id,
+          quantity: snack.quantity,
+        })),
+        movieId: movie._id,
+        price: totalPrice,
+      });
+      await order.save();
+
+      // Create a new booking
+      const booking = new Booking({
+        userId: user._id,
+        movieShowId: movieShow._id,
+        order: order._id,
+        seats: {
+          booked: seatsArray.map((seat) => ({
+            seatNumber: parseInt(seat, 10),
+          })),
+        },
+        price: totalPrice,
+        day: day,
+        time: time,
+      });
+      await booking.save();
+
+      // Update the movie show with the new selected seats
+      movieShow.selectedSeat = updatedSeats;
+      await movieShow.save();
+
+      res.status(200).json({
+        message: "Payment verified successfully",
+        data: response.data,
+        user: {
+          id: user_id,
+          movieTitle,
+          day,
+          time,
+          seatArea,
+          seats: seatsArray,
+          extras,
+          totalPrice,
+        },
+      });
+    } else {
+      res.status(400).json({
+        message: "Payment verification failed",
+        data: response.data,
+      });
     }
+  } catch (error: any) {
+    res.status(500).json({ message: "Server error", error: error.message });
   }
-);
+});
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);

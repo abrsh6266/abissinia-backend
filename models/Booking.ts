@@ -12,6 +12,7 @@ export interface IBooking extends Document {
   };
   price: number;
   day: string;
+  time: string;
 }
 
 const bookingSchema: Schema<IBooking> = new Schema<IBooking>({
@@ -20,6 +21,10 @@ const bookingSchema: Schema<IBooking> = new Schema<IBooking>({
     default: Date.now,
   },
   day: {
+    type: String,
+    required: true,
+  },
+  time: {
     type: String,
     required: true,
   },

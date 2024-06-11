@@ -11,7 +11,7 @@ export const createBooking = async (
   next: NextFunction
 ) => {
   try {
-    const { bookingDate, userId, movieShowId, order, seats, price, day } =
+    const { bookingDate, userId, movieShowId, order, seats, price, day,time } =
       req.body;
     const newBooking = new Booking({
       bookingDate,
@@ -21,6 +21,7 @@ export const createBooking = async (
       seats,
       price,
       day,
+      time,
     });
     const savedBooking = await newBooking.save();
     res.status(201).json(savedBooking);
