@@ -10,8 +10,8 @@ import User from "./models/User";
 import Snack from "./models/Snack";
 import Order from "./models/Order";
 import Booking from "./models/Booking";
-import mongoose from "mongoose";
 import MovieShow from "./models/MovieShow";
+import Notification from "./models/Notification";
 
 const app = express();
 const PORT = 4000;
@@ -161,7 +161,12 @@ app.get("/verify-payment", async (req: VerifyPaymentRequest, res: Response) => {
         time: time,
       });
       await booking.save();
-
+      const notification = new Notification({
+        userId: user._id,
+        content:
+          "You have Successfully purchased the ticket. wait until admin approval",
+        link: "/bookmarks",
+      });
       // Update the movie show with the new selected seats
       movieShow.selectedSeat = updatedSeats;
       await movieShow.save();
