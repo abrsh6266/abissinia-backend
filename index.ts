@@ -155,6 +155,7 @@ app.get(
             booked: seatsArray.map((seat) => ({ seatNumber: parseInt(seat, 10) })),
           },
           price: totalPrice,
+          day:day
         });
         await booking.save();
 

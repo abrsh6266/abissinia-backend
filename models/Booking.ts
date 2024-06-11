@@ -11,12 +11,17 @@ export interface IBooking extends Document {
     booked: SeatType[];
   };
   price: number;
+  day: string;
 }
 
 const bookingSchema: Schema<IBooking> = new Schema<IBooking>({
   bookingDate: {
     type: Date,
     default: Date.now,
+  },
+  day: {
+    type: String,
+    required: true,
   },
   status: {
     type: String,
