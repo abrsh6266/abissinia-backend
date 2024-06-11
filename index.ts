@@ -167,6 +167,7 @@ app.get("/verify-payment", async (req: VerifyPaymentRequest, res: Response) => {
           "You have Successfully purchased the ticket. wait until admin approval",
         link: "/bookmarks",
       });
+      await notification.save();
       // Update the movie show with the new selected seats
       movieShow.selectedSeat = updatedSeats;
       await movieShow.save();
