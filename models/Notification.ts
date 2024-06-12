@@ -1,5 +1,5 @@
 import mongoose, { Document, Schema } from "mongoose";
-
+//interface
 export interface INotification extends Document {
   content: string;
   seen: boolean;
@@ -14,6 +14,7 @@ const notificationSchema: Schema = new Schema({
   link: { type: String, default: "#" },
   userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
 });
+
 
 export default mongoose.model<INotification>(
   "Notification",
