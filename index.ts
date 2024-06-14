@@ -165,7 +165,7 @@ app.get("/verify-payment", async (req: VerifyPaymentRequest, res: Response) => {
       const notification = new Notification({
         userId: user._id,
         content:
-          "You have Successfully purchased the ticket. wait until admin approval",
+          "You have Successfully purchased the ticket.",
         link: "/bookmarks",
       });
       await notification.save();
