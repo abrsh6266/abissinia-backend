@@ -12,6 +12,7 @@ import Order from "./models/Order";
 import Booking from "./models/Booking";
 import MovieShow from "./models/MovieShow";
 import Notification from "./models/Notification";
+import { initializeAverageRatings } from "./controllers/admin/movieController";
 
 const app = express();
 const PORT = 4000;
@@ -196,6 +197,7 @@ app.get("/verify-payment", async (req: VerifyPaymentRequest, res: Response) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 });
+initializeAverageRatings();
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);

@@ -10,9 +10,11 @@ export interface IMovie extends Document {
   description: string;
   poster: string;
   reviewId: mongoose.Types.ObjectId[];
+  averageRating: number;
 }
 
 const movieSchema: Schema = new Schema({
+  averageRating: { type: Number, default: 0 },
   title: { type: String, required: true },
   duration: { type: String },
   genre: [{ type: String, required: true }],

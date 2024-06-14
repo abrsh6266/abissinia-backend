@@ -34,6 +34,7 @@ export const createMovie = async (
       description,
       poster,
       reviewId,
+      averageRating: 0, // Initialize averageRating to 0
     });
     const savedMovie = await newMovie.save();
     res.status(201).json(savedMovie);
@@ -79,7 +80,6 @@ export const getAllMovies = async (
     next(error);
   }
 };
-
 
 // Function to handle fetching a single movie by ID
 export const getMovieById = async (
@@ -166,16 +166,20 @@ export const deleteMovieById = async (
     const movieShows = await MovieShow.find({ movieId: id }).session(session);
 
     // Extract movieShow IDs
-    const movieShowIds = movieShows.map(show => show._id);
+    const movieShowIds = movieShows.map((show) => show._id);
 
     // Delete related Booking documents
-    await Booking.deleteMany({ movieShowId: { $in: movieShowIds } }).session(session);
+    await Booking.deleteMany({ movieShowId: { $in: movieShowIds } }).session(
+      session
+    );
 
     // Commit the transaction
     await session.commitTransaction();
     session.endSession();
 
-    res.status(200).json({ message: "Movie and related dependencies deleted successfully" });
+    res
+      .status(200)
+      .json({ message: "Movie and related dependencies deleted successfully" });
   } catch (error) {
     // Abort the transaction in case of an error
     await session.abortTransaction();
@@ -214,8 +218,6 @@ export const searchMoviesByName = async (
     next(error);
   }
 };
-
-
 
 // Function to handle fetching recently released movies with pagination
 export const getRecentlyReleasedMovies = async (
@@ -263,6 +265,27 @@ export const getRecentlyReleasedMovies = async (
   }
 };
 
+export const initializeAverageRatings = async () => {
+  const movies = await Movie.find();
+  for (const movie of movies) {
+    const result = await Review.aggregate([
+      { $match: { movieId: movie._id } },
+      { $group: { _id: "$movieId", averageRating: { $avg: "$rating" } } },
+    ]);
+    const averageRating = result.length > 0 ? result[0].averageRating : 0;
+    await Movie.findByIdAndUpdate(movie._id, { averageRating });
+  }
+  console.log("Average ratings initialized for all movies.");
+};
+
+export const updateAverageRating = async (movieId: mongoose.Types.ObjectId) => {
+  const result = await Review.aggregate([
+    { $match: { movieId: new mongoose.Types.ObjectId(movieId) } },
+    { $group: { _id: "$movieId", averageRating: { $avg: "$rating" } } },
+  ]);
+  const averageRating = result.length > 0 ? result[0].averageRating : 0;
+  await Movie.findByIdAndUpdate(movieId, { averageRating });
+};
 
 // Function to handle fetching movies that are scheduled with pagination
 export const getScheduledMovies = async (
@@ -301,4 +324,3 @@ export const getScheduledMovies = async (
     next(error);
   }
 };
-

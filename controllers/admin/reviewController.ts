@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import Review from "../../models/Review";
 import Movie from "../../models/Movie";
+import { updateAverageRating } from "./movieController";
 
 // Function to handle creating a new review
 export const createReview = async (
@@ -22,9 +23,12 @@ export const createReview = async (
     // Update the Movie model to include this new review's ID
     await Movie.findByIdAndUpdate(
       movieId,
-      { $push: { reviewId: savedReview._id } },
+      { $push: { reviewId: savedReview._id } }, // Assuming movie schema has reviewId array
       { new: true }
     );
+
+    // Update the average rating for the movie
+    await updateAverageRating(movieId);
 
     // Populate the user information for the saved review
     const populatedReview = await savedReview.populate("userId");
@@ -35,7 +39,6 @@ export const createReview = async (
   }
 };
 
-
 // Function to handle fetching all reviews
 export const getAllReviews = async (
   req: Request,
@@ -43,7 +46,7 @@ export const getAllReviews = async (
   next: NextFunction
 ) => {
   try {
-    const reviews = await Review.find();
+    const reviews = await Review.find().populate("userId");
     res.status(200).json(reviews);
   } catch (error) {
     next(error);
@@ -58,7 +61,7 @@ export const getReviewById = async (
 ) => {
   try {
     const { id } = req.params;
-    const review = await Review.findById(id);
+    const review = await Review.findById(id).populate("userId");
     if (!review) {
       return res.status(404).json({ message: "Review not found" });
     }
@@ -82,6 +85,10 @@ export const updateReviewById = async (
     if (!updatedReview) {
       return res.status(404).json({ message: "Review not found" });
     }
+
+    // Update the average rating for the movie
+    await updateAverageRating(updatedReview.movieId);
+
     res.status(200).json(updatedReview);
   } catch (error) {
     next(error);
@@ -100,6 +107,10 @@ export const deleteReviewById = async (
     if (!deletedReview) {
       return res.status(404).json({ message: "Review not found" });
     }
+
+    // Update the average rating for the movie
+    await updateAverageRating(deletedReview.movieId);
+
     res.status(200).json({ message: "Review deleted successfully" });
   } catch (error) {
     next(error);
