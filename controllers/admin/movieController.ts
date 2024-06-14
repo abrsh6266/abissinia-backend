@@ -1,6 +1,10 @@
 import { Request, Response, NextFunction } from "express";
 import Movie from "../../models/Movie";
 import MovieShow from "../../models/MovieShow";
+import mongoose from "mongoose";
+import Order from "../../models/Order";
+import Review from "../../models/Review";
+import Booking from "../../models/Booking";
 
 // Function to handle creating a new movie
 export const createMovie = async (
@@ -137,14 +141,45 @@ export const deleteMovieById = async (
   res: Response,
   next: NextFunction
 ) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
   try {
     const { id } = req.params;
-    const deletedMovie = await Movie.findByIdAndDelete(id);
+
+    // Find and delete the movie
+    const deletedMovie = await Movie.findByIdAndDelete(id).session(session);
     if (!deletedMovie) {
       return res.status(404).json({ message: "Movie not found" });
     }
-    res.status(200).json({ message: "Movie deleted successfully" });
+
+    // Delete related MovieShow documents
+    await MovieShow.deleteMany({ movieId: id }).session(session);
+
+    // Delete related Order documents
+    await Order.deleteMany({ movieId: id }).session(session);
+
+    // Delete related Review documents
+    await Review.deleteMany({ movieId: id }).session(session);
+
+    // Find related MovieShow documents to get their IDs
+    const movieShows = await MovieShow.find({ movieId: id }).session(session);
+
+    // Extract movieShow IDs
+    const movieShowIds = movieShows.map(show => show._id);
+
+    // Delete related Booking documents
+    await Booking.deleteMany({ movieShowId: { $in: movieShowIds } }).session(session);
+
+    // Commit the transaction
+    await session.commitTransaction();
+    session.endSession();
+
+    res.status(200).json({ message: "Movie and related dependencies deleted successfully" });
   } catch (error) {
+    // Abort the transaction in case of an error
+    await session.abortTransaction();
+    session.endSession();
     next(error);
   }
 };
