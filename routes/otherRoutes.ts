@@ -9,8 +9,15 @@ import * as reviewController from "../controllers/admin/reviewController";
 import * as snackController from "../controllers/admin/snackController";
 import * as starController from "../controllers/admin/starController";
 import * as userController from "../controllers/admin/userController";
+import * as movieRequestController from "../controllers/movieRequestController";
 
 const router = express.Router();
+
+//movie-request
+router.post("/movie-requests", movieRequestController.createMovieRequest);
+router.get("/movie-requests", movieRequestController.getAllMovieRequests);
+router.get("/movie-requests/:id", movieRequestController.getMovieRequestById);
+router.delete("/movie-requests/:id", movieRequestController.deleteMovieRequest);
 
 // User Routes
 router.post("/users", userController.createUser);
