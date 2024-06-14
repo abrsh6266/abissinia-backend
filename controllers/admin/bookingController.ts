@@ -215,3 +215,46 @@ export const getBookingsByUserId = async (
     next(error);
   }
 };
+
+export const getApprovedBookingsByUserId = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { userId } = req.params;
+    const bookings = await Booking.find({ status:'approved',userId })
+      .populate({
+        path: "userId",
+        select: "name email",
+      })
+      .populate({
+        path: "movieShowId",
+        populate: [
+          {
+            path: "movieId",
+          },
+          {
+            path: "hallId",
+            select: "name location",
+          },
+        ],
+      })
+      .populate({
+        path: "order",
+        populate: {
+          path: "snacks.snackId",
+          select: "name price",
+        },
+        select: "price",
+      });
+    if (bookings.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No bookings found for this user" });
+    }
+    res.status(200).json(bookings);
+  } catch (error) {
+    next(error);
+  }
+};
