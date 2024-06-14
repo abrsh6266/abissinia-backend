@@ -1,5 +1,6 @@
 import mongoose, { Document, Schema } from "mongoose";
 
+//interface
 export interface IOrder extends Document {
   snacks: { snackId: mongoose.Types.ObjectId; quantity: number }[];
   movieId: mongoose.Types.ObjectId;
