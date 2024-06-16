@@ -333,15 +333,17 @@ export const getMoviesByGenre = async (
 ) => {
   try {
     const { genre } = req.query;
-    if (!genre) {
-      return res.status(400).json({ message: "Genre query parameter is required" });
-    }
-
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
     const skip = (page - 1) * limit;
 
-    const movies = await Movie.find({ genre: { $regex: genre, $options: "i" } })
+    if (!genre) {
+      return res
+        .status(400)
+        .json({ message: "Genre query parameter is required" });
+    }
+
+    const movies = await Movie.find({ genre })
       .populate("starsId")
       .populate({
         path: "reviewId",
@@ -353,7 +355,7 @@ export const getMoviesByGenre = async (
       .skip(skip)
       .limit(limit);
 
-    const totalMovies = await Movie.countDocuments({ genre: { $regex: genre, $options: "i" } });
+    const totalMovies = await Movie.countDocuments({ genre });
     const totalPages = Math.ceil(totalMovies / limit);
 
     res.status(200).json({
