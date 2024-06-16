@@ -42,6 +42,7 @@ router.put("/halls/:id", hallController.updateHallById);
 router.delete("/halls/:id", hallController.deleteHallById);
 
 // Routes for movies
+router.get("/genre", movieController.getMoviesByGenre);
 router.post("/movies", movieController.createMovie);
 router.get("/movies", movieController.getAllMovies);
 router.get("/movies/search", movieController.searchMoviesByName);

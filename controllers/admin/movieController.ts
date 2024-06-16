@@ -324,3 +324,46 @@ export const getScheduledMovies = async (
     next(error);
   }
 };
+
+// Function to handle fetching movies by genre with pagination
+export const getMoviesByGenre = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { genre } = req.query;
+    if (!genre) {
+      return res.status(400).json({ message: "Genre query parameter is required" });
+    }
+
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const skip = (page - 1) * limit;
+
+    const movies = await Movie.find({ genre: { $regex: genre, $options: "i" } })
+      .populate("starsId")
+      .populate({
+        path: "reviewId",
+        populate: {
+          path: "userId",
+          model: "User",
+        },
+      })
+      .skip(skip)
+      .limit(limit);
+
+    const totalMovies = await Movie.countDocuments({ genre: { $regex: genre, $options: "i" } });
+    const totalPages = Math.ceil(totalMovies / limit);
+
+    res.status(200).json({
+      page,
+      limit,
+      totalPages,
+      totalMovies,
+      movies,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
