@@ -3,7 +3,7 @@ import mongoose, { Document, Schema } from "mongoose";
 export interface IMovie extends Document {
   title: string;
   duration?: string;
-  genre: string[];
+  genre: string[  ];
   country: string;
   starsId: mongoose.Types.ObjectId[];
   releaseDate: Date;
