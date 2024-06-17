@@ -24,6 +24,7 @@ export const createMovie = async (
       poster,
       reviewId,
     } = req.body;
+
     const newMovie = new Movie({
       title,
       duration,
@@ -34,8 +35,9 @@ export const createMovie = async (
       description,
       poster,
       reviewId,
-      averageRating: 0, // Initialize averageRating to 0
+      averageRating: 0,
     });
+
     const savedMovie = await newMovie.save();
     res.status(201).json(savedMovie);
   } catch (error) {
