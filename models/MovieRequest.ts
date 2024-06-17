@@ -2,6 +2,7 @@ import mongoose, { Document, Schema } from "mongoose";
 
 interface IMovieRequest extends Document {
   title: string;
+  userId: mongoose.Types.ObjectId;
   duration: number;
   releaseDate: Date;
   posterURL: string;
@@ -12,6 +13,11 @@ interface IMovieRequest extends Document {
 
 const movieRequestSchema: Schema = new Schema(
   {
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
     title: {
       type: String,
       required: true,
