@@ -12,11 +12,13 @@ export const createMovieShow = async (
 ) => {
   try {
     const { showTime, movieId, hallId } = req.body;
+
     const newMovieShow = new MovieShow({
       showTime,
       movieId,
       hallId,
     });
+
     const savedMovieShow = await newMovieShow.save();
     res.status(201).json(savedMovieShow);
   } catch (error) {
@@ -31,7 +33,9 @@ export const getAllMovieShows = async (
   next: NextFunction
 ) => {
   try {
-    const movieShows = await MovieShow.find();
+    const movieShows = await MovieShow.find()
+      .populate("movieId")
+      .populate("hallId");
     res.status(200).json(movieShows);
   } catch (error) {
     next(error);
@@ -137,11 +141,9 @@ export const deleteMovieShowById = async (
     await session.commitTransaction();
     session.endSession();
 
-    res
-      .status(200)
-      .json({
-        message: "Movie show and related dependencies deleted successfully",
-      });
+    res.status(200).json({
+      message: "Movie show and related dependencies deleted successfully",
+    });
   } catch (error) {
     // Abort the transaction in case of an error
     await session.abortTransaction();
