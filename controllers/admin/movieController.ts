@@ -326,8 +326,7 @@ export const getScheduledMovies = async (
     next(error);
   }
 };
-
-// Function to handle fetching movies by genre with pagination
+// Function to handle fetching movies by genre with pagination and without movie shows
 export const getMoviesByGenre = async (
   req: Request,
   res: Response,
@@ -345,19 +344,29 @@ export const getMoviesByGenre = async (
         .json({ message: "Genre query parameter is required" });
     }
 
-    const movies = await Movie.find({ genre })
-      .populate("starsId")
+    // Find all movies that have a scheduled show
+    const scheduledMovieShows = await MovieShow.find().distinct('movieId');
+    
+    // Query to find movies by genre and that do not have any associated movie shows
+    const movies = await Movie.find({
+      genre,
+      _id: { $nin: scheduledMovieShows },
+    })
+      .populate('starsId')
       .populate({
-        path: "reviewId",
+        path: 'reviewId',
         populate: {
-          path: "userId",
-          model: "User",
+          path: 'userId',
+          model: 'User',
         },
       })
       .skip(skip)
       .limit(limit);
 
-    const totalMovies = await Movie.countDocuments({ genre });
+    const totalMovies = await Movie.countDocuments({
+      genre,
+      _id: { $nin: scheduledMovieShows },
+    });
     const totalPages = Math.ceil(totalMovies / limit);
 
     res.status(200).json({
@@ -370,4 +379,49 @@ export const getMoviesByGenre = async (
   } catch (error) {
     next(error);
   }
-};
+}
+
+// // Function to handle fetching movies by genre with pagination
+// export const getMoviesByGenre = async (
+//   req: Request,
+//   res: Response,
+//   next: NextFunction
+// ) => {
+//   try {
+//     const { genre } = req.query;
+//     const page = parseInt(req.query.page as string) || 1;
+//     const limit = parseInt(req.query.limit as string) || 10;
+//     const skip = (page - 1) * limit;
+
+//     if (!genre) {
+//       return res
+//         .status(400)
+//         .json({ message: "Genre query parameter is required" });
+//     }
+
+//     const movies = await Movie.find({ genre })
+//       .populate("starsId")
+//       .populate({
+//         path: "reviewId",
+//         populate: {
+//           path: "userId",
+//           model: "User",
+//         },
+//       })
+//       .skip(skip)
+//       .limit(limit);
+
+//     const totalMovies = await Movie.countDocuments({ genre });
+//     const totalPages = Math.ceil(totalMovies / limit);
+
+//     res.status(200).json({
+//       page,
+//       limit,
+//       totalPages,
+//       totalMovies,
+//       movies,
+//     });
+//   } catch (error) {
+//     next(error);
+//   }
+// };
