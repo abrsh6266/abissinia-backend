@@ -18,6 +18,7 @@ export const login = async (
       return res.status(200).json({
         jwt: token,
         user: {
+          role: user.role,
           id: user.id,
           username: user.username,
           email: user.email,
