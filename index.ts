@@ -13,6 +13,7 @@ import Booking from "./models/Booking";
 import MovieShow from "./models/MovieShow";
 import Notification from "./models/Notification";
 import { initializeAverageRatings } from "./controllers/admin/movieController";
+import { initializeUserRoles } from "./controllers/admin/userController";
 
 const app = express();
 const PORT = 4000;
@@ -164,8 +165,7 @@ app.get("/verify-payment", async (req: VerifyPaymentRequest, res: Response) => {
       await booking.save();
       const notification = new Notification({
         userId: user._id,
-        content:
-          "You have Successfully purchased the ticket.",
+        content: "You have Successfully purchased the ticket.",
         link: "/bookmarks",
       });
       await notification.save();
@@ -198,6 +198,7 @@ app.get("/verify-payment", async (req: VerifyPaymentRequest, res: Response) => {
   }
 });
 initializeAverageRatings();
+initializeUserRoles();
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);

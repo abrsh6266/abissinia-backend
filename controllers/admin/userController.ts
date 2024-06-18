@@ -1,8 +1,12 @@
-import { Request, Response, NextFunction } from 'express';
-import User, { IUser } from '../../models/User';
+import { Request, Response, NextFunction } from "express";
+import User, { IUser } from "../../models/User";
 
 // Function to handle creating a new user
-export const createUser = async (req: Request, res: Response, next: NextFunction) => {
+export const createUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { username, password, email, avatar } = req.body;
     const newUser = new User({ username, password, email, avatar });
@@ -14,7 +18,11 @@ export const createUser = async (req: Request, res: Response, next: NextFunction
 };
 
 // Function to handle fetching all users
-export const getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
+export const getAllUsers = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const users = await User.find();
     res.status(200).json(users);
@@ -24,12 +32,16 @@ export const getAllUsers = async (req: Request, res: Response, next: NextFunctio
 };
 
 // Function to handle fetching a single user by ID
-export const getUserById = async (req: Request, res: Response, next: NextFunction) => {
+export const getUserById = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { id } = req.params;
     const user = await User.findById(id);
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
     res.status(200).json(user);
   } catch (error) {
@@ -38,12 +50,18 @@ export const getUserById = async (req: Request, res: Response, next: NextFunctio
 };
 
 // Function to handle updating a user by ID
-export const updateUserById = async (req: Request, res: Response, next: NextFunction) => {
+export const updateUserById = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { id } = req.params;
-    const updatedUser = await User.findByIdAndUpdate(id, req.body, { new: true });
+    const updatedUser = await User.findByIdAndUpdate(id, req.body, {
+      new: true,
+    });
     if (!updatedUser) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
     res.status(200).json(updatedUser);
   } catch (error) {
@@ -52,15 +70,54 @@ export const updateUserById = async (req: Request, res: Response, next: NextFunc
 };
 
 // Function to handle deleting a user by ID
-export const deleteUserById = async (req: Request, res: Response, next: NextFunction) => {
+export const deleteUserById = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { id } = req.params;
     const deletedUser = await User.findByIdAndDelete(id);
     if (!deletedUser) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
-    res.status(200).json({ message: 'User deleted successfully' });
+    res.status(200).json({ message: "User deleted successfully" });
   } catch (error) {
     next(error);
+  }
+};
+
+// Function to handle setting a role for a user by ID
+export const setUserRole = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params;
+    const { role } = req.body;
+    const updatedUser = await User.findByIdAndUpdate(
+      id,
+      { role },
+      { new: true }
+    );
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json(updatedUser);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Function to initialize roles for existing users
+export const initializeUserRoles = async () => {
+  try {
+    const result = await User.updateMany(
+      { role: { $exists: false } },
+      { $set: { role: "user" } }
+    );
+  } catch (error) {
+    console.error("Error updating users' role:", error);
   }
 };
